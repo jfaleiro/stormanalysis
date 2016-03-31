@@ -2,7 +2,7 @@
 title: "Health and Economic Impact of Severe Weather Events"
 author: "J Faleiro"
 date: "March 21st, 2016"
-output: html_document
+output: pdf_document
 ---
 
 ### Synopsis

@@ -15,4 +15,3 @@ vignettes/*.pdf
 .Rproj.user
 stormdata.csv.bz2
 stormanalysis_cache
-stormanalysis_files
