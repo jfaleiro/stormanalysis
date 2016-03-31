@@ -2,7 +2,7 @@
 title: "Health and Economic Impact of Severe Weather Events"
 author: "J Faleiro"
 date: "March 21st, 2016"
-output: pdf_document
+output: html_document
 ---
 
 ### Synopsis
@@ -59,7 +59,7 @@ As we can see, this is an extensive dataset. We will need just a subset of the o
 * Number of fatalities `FATALITIES`
 * Number of injuries `INJURIES`
 
-```{r extract_columns, dependson='load_storm_file'}
+```{r extract_columns, cache=TRUE, dependson='load_storm_file'}
 storm <- storm %>% 
          mutate(EVTYPE=toupper(EVTYPE)) %>%
          select(EVTYPE, STATE, FATALITIES, INJURIES)
@@ -75,7 +75,7 @@ sum(is.na(storm))
 No absent values.
 
 
-```{r storm_us_before, dependson='extract_columns'}
+```{r storm_us_before, cache=TRUE, dependson='extract_columns'}
 stormUS <- storm %>% 
            select(EVTYPE, FATALITIES, INJURIES) %>%
            group_by(EVTYPE) %>%
@@ -95,7 +95,7 @@ head(arrange(stormUS, desc(FATALITIES)), sampleSize)
 
 There are several event types described by the different `EVTYPE` values. We will proceed with cleaning up of the more important ones. We will use `dplyr::mutate` and `grepl` to look for similar event types and replace them by a representative alternative:
 
-```{r storm, dependson='extract_columns'}
+```{r storm, cache=TRUE, dependson='extract_columns'}
 storm <- storm %>%
          mutate(EVTYPE=ifelse(grepl('.*HEAT', EVTYPE), 'HEAT', 
                        ifelse(grepl('.*WIND', EVTYPE), 'STRONG WIND',
@@ -116,7 +116,7 @@ storm <- storm %>%
 And since we changed several important event types, we will re-do the U.S. aggregation of events and re-sample it:
 
 
-```{r storm_us, dependson='storm'}
+```{r storm_us, cache=TRUE, dependson='storm'}
 stormUS <- storm %>% 
            select(EVTYPE, FATALITIES, INJURIES) %>%
            group_by(EVTYPE) %>%
@@ -140,7 +140,7 @@ doScaling <- function(items) {
 
 For a meaningfull representation of fatalities and injuries, we have to scale them separately:
  
-```{r storm_scaled, dependson='storm'}
+```{r storm_scaled, cache=TRUE, dependson='storm'}
 storm$FATALITIES <- doScaling(storm$FATALITIES)
 storm$INJURIES <- doScaling(storm$INJURIES)
 summary(storm)
@@ -148,7 +148,7 @@ summary(storm)
 
 We have to perform the same scaling on data across U.S. as well, again separately for fatalities and injuries.
 
-```{r storm_us_scaled, dependson='storm_us'}
+```{r storm_us_scaled, cache=TRUE, dependson='storm_us'}
 stormUS$FATALITIES <- doScaling(stormUS$FATALITIES)
 stormUS$INJURIES <- doScaling(stormUS$INJURIES)
 summary(stormUS)
@@ -160,7 +160,7 @@ We can see in the summary above the high leverage of values on `FATALITIES` and 
 
 ##### Removing U.S. Low Leverage Data
 
-```{r deleveraged-us, dependson='storm_us_scaled'}
+```{r deleveraged-us, cache=TRUE, dependson='storm_us_scaled'}
 top <- 7
 topFatalities <- sort(stormUS$FATALITIES, TRUE)[top] # top fatalities
 topInjuries <- sort(stormUS$INJURIES, TRUE)[top]     # top injuries
@@ -171,7 +171,7 @@ majorStormsUS <- stormUS %>%
 
 ##### Removing State Low Leverage Data
 
-```{r deleveraged-state, dependson='storm-scaled'}
+```{r deleveraged-state, cache=TRUE, dependson='storm-scaled'}
 top <- 3
 majorStormsInjuries <- storm %>%
                             select(EVTYPE, STATE, INJURIES) %>%
@@ -207,7 +207,7 @@ The value of impact will quantify economic and health impact at both state and f
 
 The impact value at the state level is given by datasets `topStormsEconomicImpact` and `topStormsHealthImpact` for economic and health impact respectively.
 
-```{r impact-state, dependson='deleveraged-state'}
+```{r impact-state, cache=TRUE, dependson='deleveraged-state'}
 topStormsEconomicImpact <- majorStormsInjuries %>%
                            mutate(IMPACT=INJURIES) %>%
                            select(EVTYPE, STATE, IMPACT)
@@ -220,7 +220,7 @@ topStormsHealthImpact <- majorStormsFatalities %>%
 
 The impact value at the federal level is given by dataset `stormImpactUS` for both economic and health impacts.
 
-```{r impact-us, dependson='deleveraged-us'}
+```{r impact-us, cache=TRUE, dependson='deleveraged-us'}
 stormImpactUS <- majorStormsUS %>%
                  mutate(ECONOMIC=FATALITIES, HEALTH=INJURIES) %>%
                  select(EVTYPE, ECONOMIC, HEALTH) %>%
@@ -240,7 +240,7 @@ We are limited to a maximum of three plots total.
 
 The analysis at the U.S. level uses a bar chart plotted through `ggplot2` so show side by side the events that bring the most impact to the U.S. economy and polulation health.
 
-```{r plots-us, dependson='deleveraged-us'}
+```{r plots-us, cache=TRUE, dependson='deleveraged-us'}
 ggplot(stormImpactUS, aes(x=EVTYPE, y=IMPACT, group=OCCURRENCE, fill=OCCURRENCE, width=.6)) +
   geom_bar(stat = "identity", position = "dodge") +
   geom_bar(stat = "identity", position = "dodge", colour = "black", 
@@ -269,7 +269,7 @@ Given the large number of states and events, we opted for heatmaps for separate 
 
 The health impact is given by a heat map in which impact is given by a scale of red.
 
-```{r plot-health-states, fig.width=10, fig.height=10, dependson='deleveraged-state'}
+```{r plot-health-states, cache=TRUE, fig.width=10, fig.height=10, dependson='deleveraged-state'}
 baseSize <- 9
 ggplot(topStormsHealthImpact, aes(y=STATE, x=EVTYPE)) + 
     ggtitle('Health Impact of Weather Events - per State') +
@@ -289,7 +289,7 @@ This heat map shows the most prevalent types of high economic impact events: tor
 
 The economic impact is given by a heat map in which impact is given by a scale of green.
 
-```{r plot-economic-states, fig.width=10, fig.height=10, dependson='deleveraged-state'}
+```{r plot-economic-states, cache=TRUE, fig.width=10, fig.height=10, dependson='deleveraged-state'}
 ggplot(topStormsEconomicImpact, aes(y=STATE, x=EVTYPE)) + 
     ggtitle('Economic Impact of Weather Events - per State') +
     geom_tile(aes(fill=IMPACT), colour="white") + 
