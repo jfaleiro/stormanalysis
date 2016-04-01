@@ -7,4 +7,7 @@ The basic goal of this study is to explore the NOAA Storm Database and answer so
 
 Our analysis is conducted in R and will consist of tables, figures and several summaries. We will take special care to document each of the steps, making sure they follow a fully scripted flow and therefore allow for the entire analysis to be fully reproducible.
 
-Go to [analysis](stormanalysis.Rmd "storm analysis")
+
+[Analysis](http://rpubs.com/jfaleiro/severeweatherimpact "Health and Economic Impact of Severe Weather Events")
+
+[RMD](stormanalysis.Rmd "storm analysis")
